@@ -138,6 +138,13 @@ public protocol DiscordDispatchEventHandler {
 	/// - parameter with: The data from the event
 	///
 	func handleMessageUpdate(with data: [String: Any])
+    
+    ///
+    /// Handles reaction added updates from Discord.
+    ///
+    /// - parameter with: The data from the event
+    ///
+    func handleMessageReactionAdd(with data: [String: Any])
 
 	///
 	/// Handles presence updates from Discord.

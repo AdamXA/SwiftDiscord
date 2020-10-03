@@ -218,6 +218,7 @@ open class DiscordClient : DiscordClientSpec, DiscordDispatchEventHandler, Disco
         case .presenceUpdate:        handlePresenceUpdate(with: eventData)
         case .messageCreate:         handleMessageCreate(with: eventData)
         case .messageUpdate:         handleMessageUpdate(with: eventData)
+        case .messageReactionAdd:    handleMessageReactionAdd(with: eventData)
         case .guildMemberAdd:        handleGuildMemberAdd(with: eventData)
         case .guildMembersChunk:     handleGuildMembersChunk(with: eventData)
         case .guildMemberUpdate:     handleGuildMemberUpdate(with: eventData)
@@ -817,6 +818,27 @@ open class DiscordClient : DiscordClientSpec, DiscordDispatchEventHandler, Disco
         DefaultDiscordLogger.Logger.verbose("Message: \(message)", type: logType)
 
         delegate?.client(self, didCreateMessage: message)
+    }
+    
+    ///
+    /// Handles reaction add events from Discord. You shouldn't need to call this method directly.
+    ///
+    /// Override to provide additional customization around this event.
+    ///
+    /// Calls the `didAddMessageReaction` delegate method.
+    ///
+    /// - parameter with: The data from the event
+    ///
+    open func handleMessageReactionAdd(with data: [String: Any]) {
+        DefaultDiscordLogger.Logger.log("Handling add message reaction", type: logType)
+
+        guard let emojiData = data["emoji"] as? [String: Any] else { return }
+        let emoji = DiscordEmoji(emojiObject: emojiData)
+
+        guard let messageId = Snowflake(data["message_id"] as? String) else { return }
+        guard let userId = Snowflake(data["user_id"] as? String) else { return }
+
+        delegate?.client(self, didAddMessageReaction: emoji, onMessage: MessageID(messageId.rawValue), sentBy: userId)
     }
 
     ///

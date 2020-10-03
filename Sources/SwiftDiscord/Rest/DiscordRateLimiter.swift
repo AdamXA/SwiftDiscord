@@ -59,6 +59,17 @@ public final class DiscordRateLimiter : DiscordRateLimiterSpec {
     ///
     public func executeRequest(_ request: URLRequest, for endpointKey: DiscordRateLimitKey,
                                callback: @escaping (Data?, HTTPURLResponse?, Error?) -> ()) {
+        
+        let lock = NSLock()
+        lock.lock()
+        
+        func syncCallback(data: Data?, response: URLResponse?, error: Error?) -> Void {
+            lock.unlock()
+            let responseHandler = createResponseHandler(for: request, endpointKey: endpointKey,
+                                  callback: callback)
+            responseHandler(data, response, error)
+        }
+        
         func _executeRequest() {
             if endpointLimits[endpointKey] == nil {
                 // First time handling this endpoint, err on the side caution and limit to one
@@ -88,8 +99,8 @@ public final class DiscordRateLimiter : DiscordRateLimiterSpec {
             DefaultDiscordLogger.Logger.debug("Doing request: \(request), remaining: \(rateLimit.remaining)", type: "DiscordRateLimiter")
 
             session.dataTask(with: request,
-                             completionHandler: createResponseHandler(for: request, endpointKey: endpointKey,
-                                                                      callback: callback)).resume()
+                             completionHandler: syncCallback).resume()
+            lock.lock()
         }
 
         limitQueue.async(execute: _executeRequest)
@@ -245,6 +256,9 @@ public struct DiscordRateLimitKey : Hashable {
         static let          slack = DiscordRateLimitURLParts(rawValue: 1 << 23)
         static let         github = DiscordRateLimitURLParts(rawValue: 1 << 24)
         static let       auditLog = DiscordRateLimitURLParts(rawValue: 1 << 25)
+        static let      reactions = DiscordRateLimitURLParts(rawValue: 1 << 26)
+        static let          emoji = DiscordRateLimitURLParts(rawValue: 1 << 27)
+        static let             me = DiscordRateLimitURLParts(rawValue: 1 << 28)
 
         public init(rawValue: Int) {
             self.rawValue = rawValue

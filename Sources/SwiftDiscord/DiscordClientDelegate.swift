@@ -125,6 +125,15 @@ public protocol DiscordClientDelegate : class {
     /// - parameter didCreateMessage: The message that was received.
     ///
     func client(_ client: DiscordClient, didCreateMessage message: DiscordMessage)
+    
+    ///
+    /// Called when the client receives a message reaction from Discord.
+    ///
+    /// - parameter client: The client that is calling.
+    /// - parameter didAddMessageReaction: The emoji that was received.
+    /// - parameter onMessage: The message the reaction was added to.
+    ///
+    func client(_ client: DiscordClient, didAddMessageReaction emoji: DiscordEmoji, onMessage: MessageID, sentBy: UserID)
 
     ///
     /// Called when the client adds a new role.
@@ -303,6 +312,9 @@ public extension DiscordClientDelegate {
 
     /// Default.
     func client(_ client: DiscordClient, didCreateMessage message: DiscordMessage) { }
+    
+    /// Default.
+    func client(_ client: DiscordClient, didAddMessageReaction emoji: DiscordEmoji, onMessage: MessageID, sentBy: UserID) { }
 
     /// Default.
     func client(_ client: DiscordClient, didReceivePresenceUpdate presence: DiscordPresence) { }
